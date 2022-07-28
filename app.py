@@ -1,5 +1,5 @@
 import analytics
-analytics.write_key = '{REPLACE_WITH_YOUR_WRITE_KEY}'
+analytics.write_key = 'Y0FF5ESmoRG1CTvzAU7I1nt9EGiHmTer'
 
 # Scenario 1: a new user comes to site and submits an inquiry with their email address
 # Fire a track event to capture the inquiry
