@@ -45,8 +45,8 @@
     <input name="submit" type="submit" value="submit"/>
 </form> 
     <!--Placeholder for identify and track script -->
-  <script type="text/javascript">
-      function identify(e){
+<script type="text/javascript">
+    function identify(e) {
         e.preventDefault();
         var form = e.target;
         var email = form["email"].value;
@@ -59,19 +59,21 @@
             destination: destination, 
             details: details
         };
-	    visitor.getMarketingCloudVisitorID(function(mcID) {
-	      // Include the MCID in the identify traits
-	      analytics.identify(email, {
-		email: email,
-		name: fullname,
-		mcid: mcID // Add the MCID here
-	      });
+        visitor.getMarketingCloudVisitorID(function(mcID) {
+            // Include the MCID in the identify traits
+            analytics.identify(email, {
+                email: email,
+                name: fullname,
+                mcid: mcID // Add the MCID here
+            });
 		    
-	      analytics.track('destination submitted', { ...user, mcid: mcID }, function() {
-	        window.location.href = "";
-	      });
-      }
+            analytics.track('destination submitted', { ...user, mcid: mcID }, function() {
+                window.location.href = "";
+            });
+        }); // Closing for visitor.getMarketingCloudVisitorID
+    } // Closing for identify function
 </script>
+
 
 </body> 
 </html>
