@@ -2,21 +2,12 @@
 <html> 
 <head> 
 	<!-- Adobe Analytics AppMeasurement.js Script (Add your tracking server and report suite ID below) -->
-	<script src="https://assets.adobedtm.com/05eee2681a65/662f203dcd05/launch-edbbff3eaa74.min.js" async></script>
-	
-	<!-- Adobe Analytics SDK Initialization -->
-<!-- 	<script type="text/javascript">
-	// Initialize AppMeasurement
-	var s = new AppMeasurement();
-	s.account = "sgmjeremyreportsuite";  // Replace with your report suite ID
-	s.trackingServer = "YOUR_TRACKING_SERVER";  // Replace with your tracking server
-	s.trackingServerSecure = "YOUR_SECURE_TRACKING_SERVER"; // Optional: Secure server for https
-	
-	s.visitorNamespace = "YOUR_NAMESPACE";  // Replace with your Adobe namespace
-	s.charSet = "UTF-8";
-	s.cookieDomainPeriods = "2"; // Adjust based on your domain (e.g., 2 for example.com)
-	</script> -->
-	
+	    <script 
+	        src="https://assets.adobedtm.com/05eee2681a65/662f203dcd05/launch-edbbff3eaa74.min.js" 
+	        async 
+	        onload="initializeVisitor()">
+	    </script>
+
 	<script>
 	  !function(){var i="analytics",analytics=window[i]=window[i]||[];if(!analytics.initialize)if(analytics.invoked)window.console&&console.error&&console.error("Segment snippet included twice.");else{analytics.invoked=!0;analytics.methods=["trackSubmit","trackClick","trackLink","trackForm","pageview","identify","reset","group","track","ready","alias","debug","page","screen","once","off","on","addSourceMiddleware","addIntegrationMiddleware","setAnonymousId","addDestinationMiddleware","register"];analytics.factory=function(e){return function(){if(window[i].initialized)return window[i][e].apply(window[i],arguments);var n=Array.prototype.slice.call(arguments);if(["track","screen","alias","group","page","identify"].indexOf(e)>-1){var c=document.querySelector("link[rel='canonical']");n.push({__t:"bpc",c:c&&c.getAttribute("href")||void 0,p:location.pathname,u:location.href,s:location.search,t:document.title,r:document.referrer})}n.unshift(e);analytics.push(n);return analytics}};for(var n=0;n<analytics.methods.length;n++){var key=analytics.methods[n];analytics[key]=analytics.factory(key)}analytics.load=function(key,n){var t=document.createElement("script");t.type="text/javascript";t.async=!0;t.setAttribute("data-global-segment-analytics-key",i);t.src="https://cdn.segment.com/analytics.js/v1/" + key + "/analytics.min.js";var r=document.getElementsByTagName("script")[0];r.parentNode.insertBefore(t,r);analytics._loadOptions=n};analytics._writeKey="xJo2vbqhKIjLteoA3czivgUpSYdFmZjz";;analytics.SNIPPET_VERSION="5.2.0";
 	  analytics.load("xJo2vbqhKIjLteoA3czivgUpSYdFmZjz");
@@ -24,19 +15,61 @@
 	  }}();
 	</script>
     <!--Placeholder for Segment Snippet --> 
+<script>
+        function initializeVisitor() {
+            // Define and retrieve Experience Cloud ID
+            var visitor = Visitor.getInstance("B3CB46FC57C6C8F77F000101@AdobeOrg");
 
+            // Use the ID in identify and track calls
+            visitor.getMarketingCloudVisitorID(function(mcID) {
+                console.log("Experience Cloud ID:", mcID);
+
+                // Save mcID for future analytics calls
+                window.mcID = mcID;
+            });
+        }
+
+        // Function for handling form submission and including mcID
+        function identify(e) {
+            e.preventDefault();
+            var form = e.target;
+            var email = form["email"].value;
+            var fullname = form["fullname"].value;
+            var destination = form["destination"].value;
+            var details = form["details"].value;
+            var user = {
+                email: email, 
+                name: fullname, 
+                destination: destination, 
+                details: details
+            };
+
+            // Use mcID if available, or queue it if not
+            if (window.mcID) {
+                analytics.identify(email, {
+                    email: email,
+                    name: fullname,
+                    mcid: window.mcID
+                });
+
+                analytics.track('destination submitted', { ...user, mcid: window.mcID });
+            } else {
+                console.warn("MCID not yet available.");
+            }
+        }
+    </script>
 </head> 
+	
 <body> 
 <h1>What is your favorite place to travel?</h1> 
 <p>I am building a directory of the sweetest travel destinations.</p>  
 <form name="travel" onsubmit="identify(event)">
-     What is your favorite travel destination?
+    What is your favorite travel destination?
     <input name="destination" required="" size="81" type="text"/> 
     <br><br><br> 
     Any recommendations (cool things to do, places to visit or restaurants to eat)? 
     <br><br> 
-    <textarea cols="81" name="details" rows="10">
-    </textarea> 
+    <textarea cols="81" name="details" rows="10"></textarea> 
     <br><br> 
     Name: <input name="fullname" required="" size="75" type="text"/> 
     <br><br> 
@@ -44,36 +77,5 @@
     <br><br>
     <input name="submit" type="submit" value="submit"/>
 </form> 
-    <!--Placeholder for identify and track script -->
-<script type="text/javascript">
-    function identify(e) {
-        e.preventDefault();
-        var form = e.target;
-        var email = form["email"].value;
-        var fullname = form["fullname"].value;
-        var destination = form["destination"].value;
-        var details = form["details"].value;
-        var user = {
-            email: email, 
-            name: fullname, 
-            destination: destination, 
-            details: details
-        };
-        visitor.getMarketingCloudVisitorID(function(mcID) {
-            // Include the MCID in the identify traits
-            analytics.identify(email, {
-                email: email,
-                name: fullname,
-                mcid: mcID // Add the MCID here
-            });
-		    
-            analytics.track('destination submitted', { ...user, mcid: mcID }, function() {
-                window.location.href = "";
-            });
-        }); // Closing for visitor.getMarketingCloudVisitorID
-    } // Closing for identify function
-</script>
-
-
 </body> 
 </html>
