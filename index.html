@@ -59,13 +59,17 @@
             destination: destination, 
             details: details
         };
-        analytics.identify(email, {
-            email: email, 
-            name: fullname
-        });
-        analytics.track('destination submitted', user, function() {
-            window.location.href = "";
-        });
+	    visitor.getMarketingCloudVisitorID(function(mcID) {
+	      // Include the MCID in the identify traits
+	      analytics.identify(email, {
+		email: email,
+		name: fullname,
+		mcid: mcID // Add the MCID here
+	      });
+		    
+	      analytics.track('destination submitted', { ...user, mcid: mcID }, function() {
+	        window.location.href = "";
+	      });
       }
 </script>
 
