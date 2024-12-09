@@ -16,10 +16,10 @@
 	</script>
     <!--Placeholder for Segment Snippet --> 
 <script>
-        function initializeVisitor() {
-            // Define and retrieve Experience Cloud ID
-            var visitor = Visitor.getInstance("B3CB46FC57C6C8F77F000101@AdobeOrg");
+	// Define and retrieve Experience Cloud ID
+	var visitor = Visitor.getInstance("B3CB46FC57C6C8F77F000101@AdobeOrg");
 
+        function initializeVisitor() {
             // Use the ID in identify and track calls
             visitor.getMarketingCloudVisitorID(function(mcID) {
                 console.log("Experience Cloud ID:", mcID);
