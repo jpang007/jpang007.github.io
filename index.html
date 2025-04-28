@@ -1,107 +1,81 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Consent Management Test</title>
-</head>
-<body>
-<h1>What is your favorite place to travel?</h1>
-<p>I am building a directory of the sweetest travel destinations.</p>
+<!DOCTYPE html> 
+<html> 
+<head> 
+	<!-- Adobe Analytics AppMeasurement.js Script (Add your tracking server and report suite ID below) -->
+<!-- 	    <script 
+	        src="https://assets.adobedtm.com/05eee2681a65/662f203dcd05/launch-edbbff3eaa74.min.js" 
+	        async 
+	        onload="initializeVisitor()">
+	    </script> -->
 
-<form id="travelForm">
-  What is your favorite travel destination?
-  <input name="destination" required size="81" type="text"/> 
-  <br><br><br> 
-  Any recommendations? 
-  <br><br> 
-  <textarea cols="81" name="details" rows="10"></textarea> 
-  <br><br> 
-  Name: <input name="fullname" required size="75" type="text"/> 
-  <br><br> 
-  Email: <input name="email" required size="75" type="email"/> 
-  <br><br>
-  <input type="submit" value="Submit"/>
-</form>
-
-<!-- 1. Simulate a very basic CMP -->
+	<script>
+	  !function(){var i="analytics",analytics=window[i]=window[i]||[];if(!analytics.initialize)if(analytics.invoked)window.console&&console.error&&console.error("Segment snippet included twice.");else{analytics.invoked=!0;analytics.methods=["trackSubmit","trackClick","trackLink","trackForm","pageview","identify","reset","group","track","ready","alias","debug","page","screen","once","off","on","addSourceMiddleware","addIntegrationMiddleware","setAnonymousId","addDestinationMiddleware","register"];analytics.factory=function(e){return function(){if(window[i].initialized)return window[i][e].apply(window[i],arguments);var n=Array.prototype.slice.call(arguments);if(["track","screen","alias","group","page","identify"].indexOf(e)>-1){var c=document.querySelector("link[rel='canonical']");n.push({__t:"bpc",c:c&&c.getAttribute("href")||void 0,p:location.pathname,u:location.href,s:location.search,t:document.title,r:document.referrer})}n.unshift(e);analytics.push(n);return analytics}};for(var n=0;n<analytics.methods.length;n++){var key=analytics.methods[n];analytics[key]=analytics.factory(key)}analytics.load=function(key,n){var t=document.createElement("script");t.type="text/javascript";t.async=!0;t.setAttribute("data-global-segment-analytics-key",i);t.src="https://cdn.segment.com/analytics.js/v1/" + key + "/analytics.min.js";var r=document.getElementsByTagName("script")[0];r.parentNode.insertBefore(t,r);analytics._loadOptions=n};analytics._writeKey="xJo2vbqhKIjLteoA3czivgUpSYdFmZjz";;analytics.SNIPPET_VERSION="5.2.0";
+	  analytics.load("xJo2vbqhKIjLteoA3czivgUpSYdFmZjz");
+	  analytics.page();
+	  }}();
+	</script>
+    <!--Placeholder for Segment Snippet --> 
 <script>
-  window.CMP = {
-    ConsentModel: 'opt-in', // or 'opt-out'
-    consentedCategories: () => ({ marketing: true, analytics: true }),
-    categories: ['marketing', 'analytics'],
-    popUpVisible: () => false,
-    onConsentChanged: (callback) => {
-      // For simulation, you can call this manually later
-      window.simulateConsentChange = (newCategories) => {
-        callback({ detail: newCategories })
-      }
-    }
-  }
-</script>
+	// Define and retrieve Experience Cloud ID
+	// var visitor = Visitor.getInstance("B3CB46FC57C6C8F77F000101@AdobeOrg");
 
-<!-- 2. Load the wrapper and analytics -->
-<script type="module">
-  import { createWrapper, resolveWhen } from 'https://cdn.skypack.dev/@segment/analytics-consent-tools'
-  import { AnalyticsBrowser } from 'https://cdn.skypack.dev/@segment/analytics-next'
+ //        function initializeVisitor() {
+ //            // Use the ID in identify and track calls
+ //            visitor.getMarketingCloudVisitorID(function(mcID) {
+ //                console.log("Experience Cloud ID:", mcID);
 
-  // Your wrapper
-  const normalizeCategories = (categories) => {
-    return categories
-  }
+ //                // Save mcID for future analytics calls
+ //                window.mcID = mcID;
+ //            });
+ //        }
 
-  const withCMP = createWrapper({
-    shouldLoadWrapper: async () => {
-      await resolveWhen(() => window.CMP !== undefined, 500)
-    },
-    shouldLoadSegment: async (ctx) => {
-      if (window.CMP.ConsentModel === 'opt-out') {
-        return ctx.load({ consentModel: 'opt-out' })
-      } else {
-        await resolveWhen(
-          () => !window.CMP.popUpVisible() && window.CMP.categories.length,
-          500
-        )
-        return ctx.load({ consentModel: 'opt-in' })
-      }
-    },
-    getCategories: () => {
-      return normalizeCategories(window.CMP.consentedCategories())
-    },
-    registerOnConsentChanged: (setCategories) => {
-      window.CMP.onConsentChanged((event) => {
-        setCategories(normalizeCategories(event.detail))
-      })
-    }
-  })
+        // Function for handling form submission and including mcID
+        function identify(e) {
+            e.preventDefault();
+            var form = e.target;
+            var email = form["email"].value;
+            var fullname = form["fullname"].value;
+            var destination = form["destination"].value;
+            var details = form["details"].value;
+            var user = {
+                email: email, 
+                name: fullname, 
+                destination: destination, 
+                details: details
+            };
 
-  // Create the Analytics instance
-  const analytics = new AnalyticsBrowser()
+            // Use mcID if available, or queue it if not
+            if (window.mcID) {
+                analytics.identify(email, {
+                    email: email,
+                    name: fullname,
+                    mcid: window.mcID
+                });
 
-  // Attach with consent wrapper
-  await withCMP(analytics).load({ writeKey: 'MSEyvX1MNFogVw1n6O2qxijFWnfzcvBy' })
-
-  // Now wire up your form submission
-  document.getElementById('travelForm').addEventListener('submit', (e) => {
-    e.preventDefault()
-    const form = e.target
-    const email = form.email.value
-    const fullname = form.fullname.value
-    const destination = form.destination.value
-    const details = form.details.value
-
-    analytics.identify(email, {
-      email,
-      name: fullname,
-    })
-
-    analytics.track('destination submitted', {
-      destination,
-      details,
-      email,
-      name: fullname
-    })
-  })
-</script>
-
-</body>
+                analytics.track('destination submitted', { ...user, mcid: window.mcID });
+            } else {
+                console.warn("MCID not yet available.");
+            }
+        }
+    </script>
+</head> 
+	
+<body> 
+<h1>What is your favorite place to travel?</h1> 
+<p>I am building a directory of the sweetest travel destinations.</p>  
+<form name="travel" onsubmit="identify(event)">
+    What is your favorite travel destination?
+    <input name="destination" required="" size="81" type="text"/> 
+    <br><br><br> 
+    Any recommendations (cool things to do, places to visit or restaurants to eat)? 
+    <br><br> 
+    <textarea cols="81" name="details" rows="10"></textarea> 
+    <br><br> 
+    Name: <input name="fullname" required="" size="75" type="text"/> 
+    <br><br> 
+    Email: <input name="email" required="" size="75" type="email"/> 
+    <br><br>
+    <input name="submit" type="submit" value="submit"/>
+</form> 
+</body> 
 </html>
