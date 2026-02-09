@@ -61,7 +61,9 @@
           };
           analytics.SNIPPET_VERSION="5.2.0";
           analytics.load(SELECTED_WRITE_KEY);
-          analytics.page(event: "Home");
+          analytics.page("Home", {  
+            event: "Home"
+          });
         }
     }();
   </script>
