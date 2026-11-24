@@ -23,49 +23,81 @@
     console.log("Using Segment write key:", SELECTED_WRITE_KEY);
 
     // ----------------------------
-    // SEGMENT SNIPPET (unaltered)
+    // SEGMENT SNIPPET 5.2.0 + SIGNALS (Auto-Instrumentation)
     // ----------------------------
-    !function(){
-      var analytics=window.analytics=window.analytics||[];
-      if(!analytics.initialize)
-        if(analytics.invoked)
+    (function () {
+      var i = "analytics",
+        analytics = (window[i] = window[i] || []);
+      if (!analytics.initialize)
+        if (analytics.invoked)
           window.console && console.error && console.error("Segment snippet included twice.");
         else {
-          analytics.invoked=!0;
-          analytics.methods=[
+          analytics.invoked = !0;
+          analytics.methods = [
             "trackSubmit","trackClick","trackLink","trackForm","pageview",
             "identify","reset","group","track","ready","alias","debug",
             "page","screen","once","off","on","addSourceMiddleware",
             "addIntegrationMiddleware","setAnonymousId","addDestinationMiddleware","register"
           ];
-          analytics.factory=function(method){
-            return function(){
-              var args=Array.prototype.slice.call(arguments);
-              args.unshift(method);
-              analytics.push(args);
+          analytics.factory = function (e) {
+            return function () {
+              if (window[i].initialized)
+                return window[i][e].apply(window[i], arguments);
+              var n = Array.prototype.slice.call(arguments);
+              if (["track","screen","alias","group","page","identify"].indexOf(e) > -1) {
+                var c = document.querySelector("link[rel='canonical']");
+                n.push({
+                  __t: "bpc",
+                  c: (c && c.getAttribute("href")) || void 0,
+                  p: location.pathname,
+                  u: location.href,
+                  s: location.search,
+                  t: document.title,
+                  r: document.referrer
+                });
+              }
+              n.unshift(e);
+              analytics.push(n);
               return analytics;
             };
           };
-          for(var i=0;i<analytics.methods.length;i++){
-            var key=analytics.methods[i];
-            analytics[key]=analytics.factory(key);
+          for (var n = 0; n < analytics.methods.length; n++) {
+            var key = analytics.methods[n];
+            analytics[key] = analytics.factory(key);
           }
-          analytics.load=function(key,options){
-            var script=document.createElement("script");
-            script.type="text/javascript";
-            script.async=!0;
-            script.src="https://cdn.segment.com/analytics.js/v1/" + key + "/analytics.min.js";
-            var first=document.getElementsByTagName("script")[0];
-            first.parentNode.insertBefore(script, first);
-            analytics._loadOptions=options;
+
+          var r = document.getElementsByTagName("script")[0];
+
+          analytics.load = function (key, n) {
+            var t = document.createElement("script");
+            t.type = "text/javascript";
+            t.async = !0;
+            t.setAttribute("data-global-segment-analytics-key", i);
+            t.src = "https://cdn.segment.com/analytics.js/v1/" + key + "/analytics.min.js";
+            r.parentNode.insertBefore(t, r);
+            analytics._loadOptions = n;
           };
-          analytics.SNIPPET_VERSION="5.2.0";
-          analytics.load(SELECTED_WRITE_KEY);
-          analytics.page("Home", {  
-            event: "Home"
-          });
+
+          analytics.loadWithSignals = function (key, n) {
+            window.signalsPluginReady = function (SignalsPlugin) {
+              var signalsPlugin = new SignalsPlugin();
+              analytics.register(signalsPlugin);
+              analytics.load(key, n);
+            };
+            var signalsScript = document.createElement("script");
+            signalsScript.type = "text/javascript";
+            signalsScript.src =
+              "https://cdn.jsdelivr.net/npm/@segment/analytics-signals@latest/dist/umd/analytics-signals.umd.js";
+            signalsScript.async = !0;
+            r.parentNode.insertBefore(signalsScript, r);
+          };
+
+          analytics._writeKey = SELECTED_WRITE_KEY;
+          analytics.SNIPPET_VERSION = "5.2.0";
+          analytics.loadWithSignals(SELECTED_WRITE_KEY);
+          analytics.page("Home");
         }
-    }();
+    })();
   </script>
 
   <style>
@@ -97,16 +129,18 @@
     <code>?partner=true</code> → Partner source
     <br />
     <code>(no param)</code> → Default source
+    <br />
+    <code>&amp;segment_signals_debug=true</code> → Send signals to the Event Builder
   </p>
 
   <hr />
 
-  <button onclick="identifyUser()">Identify User</button>
-  <button onclick="trackEvent()">Track Event</button>
+  <button id="identify-btn" onclick="identifyUser()">Identify User</button>
+  <button id="track-btn" onclick="trackEvent()">Track Event</button>
 
   <script>
     function identifyUser() {
-      analytics.identify("test@example.com", {
+      analytics.identify("test-user-123", {
         email: "test@example.com",
         onboarding_type:
           SELECTED_WRITE_KEY === PARTNER_WRITE_KEY ? "partner" : "default"
@@ -117,8 +151,7 @@
     function trackEvent() {
       analytics.track("Button Clicked", {
         source_type:
-          SELECTED_WRITE_KEY === PARTNER_WRITE_KEY ? "partner" : "default",
-        timestamp: new Date().toISOString()
+          SELECTED_WRITE_KEY === PARTNER_WRITE_KEY ? "partner" : "default"
       });
       alert("Track sent");
     }
